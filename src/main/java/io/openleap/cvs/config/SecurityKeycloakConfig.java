@@ -17,6 +17,7 @@ public class SecurityKeycloakConfig {
                         authorize ->
                                 authorize
                                         .requestMatchers("/swagger-ui/**", "/v3/**").permitAll()
+                                        .requestMatchers("/api/cvs/**").hasAuthority("ROLE_cvs.read")
                                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(customJwtAuthenticationConverter())));

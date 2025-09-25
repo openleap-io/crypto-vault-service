@@ -26,7 +26,7 @@ import java.util.Map;
 
 @SecurityRequirement(name = "LocalKeycloakOauth2")
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/cvs")
 public class CryptoVaultController {
     @Autowired
     private CryptoService cryptoService;
