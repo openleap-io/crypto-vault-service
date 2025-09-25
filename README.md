@@ -5,14 +5,15 @@ master key stored in a file to derive encryption keys.
 
 ## Start up the services
 
-Start spring cloud services and keycloak by running
+In `/etc/hosts` add the following line:
+`127.0.0.1        keycloak-web`
 
-navigate to:
+Start spring cloud services and keycloak by navigate to:
 
 ```
 docker/docker-compose.yml
 ```
-run command:
+and running the command:
 ```run
 docker compose up -d
 ```
