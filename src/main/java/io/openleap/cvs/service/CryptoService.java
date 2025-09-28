@@ -10,7 +10,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.GCMParameterSpec;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -28,18 +28,18 @@ import java.util.stream.Collectors;
 
 @Component
 public class CryptoService {
-    private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final String ALGORITHM = "AES/GCM/NoPadding";
     private static final String OBJECT_ID = "objectId";
     private final SecretKey secretKey;
-    private final IvParameterSpec ivParameterSpec;
+    private final GCMParameterSpec ivParameterSpec;
 
     public CryptoService(CvsConfig cvsConfig)
             throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException,
             IOException {
         byte[] ivBytes = cvsConfig.getAesInitializationVector().getBytes();
 
-        if (ivBytes.length < 16) {
-            throw new InvalidAlgorithmParameterException("Wrong IV length: must be 16 bytes long");
+        if (ivBytes.length < 32) {
+            throw new InvalidAlgorithmParameterException("Wrong IV length: must be 32 bytes long");
         }
 
         Path secretKeyPath = Paths.get(cvsConfig.getEncryptionKeyPath());
@@ -47,25 +47,23 @@ public class CryptoService {
         secretKey =
                 AESUtil.getKeyFromPassword(Files.readString(secretKeyPath, Charset.defaultCharset()));
         ivParameterSpec =
-                new IvParameterSpec(Arrays.copyOfRange(ivBytes, ivBytes.length - 16, ivBytes.length));
+                new GCMParameterSpec(128, Arrays.copyOfRange(ivBytes, ivBytes.length - 32, ivBytes.length));
     }
 
-    public IvParameterSpec generateIvFromSessionUser(String sessionUserId) throws NoSuchAlgorithmException {
+    public GCMParameterSpec generateIvFromSessionUser(String sessionUserId) throws NoSuchAlgorithmException {
         if (sessionUserId == null) {
             return ivParameterSpec;
         }
-        // Convert string to bytes
+
         byte[] inputBytes = sessionUserId.getBytes(StandardCharsets.UTF_8);
 
-        // Hash using SHA-256
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hash = digest.digest(inputBytes);
 
-        // Use first 16 bytes for IV (AES block size)
-        byte[] iv = new byte[16];
-        System.arraycopy(hash, 0, iv, 0, 16);
+        byte[] iv = new byte[32];
+        System.arraycopy(hash, 0, iv, 0, 32);
 
-        return new IvParameterSpec(iv);
+        return new GCMParameterSpec(128, iv);
     }
 
     public String encryptWithAesCbc(String clearTextInput, String iv)
@@ -77,7 +75,7 @@ public class CryptoService {
 
     public String decryptWithAesCbc(String cipherInput, String iv)
             throws NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-                 InvalidKeyException {
+            InvalidKeyException {
         try {
             return AESUtil.decrypt(ALGORITHM, cipherInput, secretKey, generateIvFromSessionUser(iv));
         } catch (NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
