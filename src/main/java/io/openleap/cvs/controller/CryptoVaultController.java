@@ -1,9 +1,10 @@
 package io.openleap.cvs.controller;
 
+import io.openleap.cvs.controller.dto.DecryptListRequestDto;
 import io.openleap.cvs.controller.dto.DecryptRequestDto;
 import io.openleap.cvs.controller.dto.EncryptListRequestDto;
 import io.openleap.cvs.controller.dto.EncryptRequestDto;
-import io.openleap.cvs.controller.dto.DecryptListRequestDto;
+import io.openleap.cvs.exception.InvalidIvException;
 import io.openleap.cvs.service.CryptoService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -41,10 +42,15 @@ public class CryptoVaultController {
 
     @PostMapping(value = "decrypt", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> decrypt(@RequestBody @Valid DecryptRequestDto decryptRequestDto)
-            throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException,
-            NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        return new ResponseEntity<>(
-                cryptoService.decryptWithAesCbc(decryptRequestDto.value(), decryptRequestDto.iv()), HttpStatus.OK);
+            throws InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, InvalidKeyException {
+        try {
+            var response = cryptoService.decryptWithAesCbc(decryptRequestDto.value(), decryptRequestDto.iv());
+            return new ResponseEntity<>(
+                    response, HttpStatus.OK);
+        } catch (InvalidIvException e) {
+            return new ResponseEntity<>("Invalid initialization vector", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping(value = "/encryptList", produces = MediaType.APPLICATION_JSON_VALUE)

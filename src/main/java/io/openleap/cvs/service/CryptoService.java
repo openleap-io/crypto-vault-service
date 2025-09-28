@@ -2,6 +2,7 @@ package io.openleap.cvs.service;
 
 
 import io.openleap.cvs.config.CvsConfig;
+import io.openleap.cvs.exception.InvalidIvException;
 import io.openleap.cvs.util.AESUtil;
 import org.springframework.stereotype.Component;
 
@@ -75,9 +76,13 @@ public class CryptoService {
     }
 
     public String decryptWithAesCbc(String cipherInput, String iv)
-            throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException,
-            IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        return AESUtil.decrypt(ALGORITHM, cipherInput, secretKey, generateIvFromSessionUser(iv));
+            throws NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+                 InvalidKeyException {
+        try {
+            return AESUtil.decrypt(ALGORITHM, cipherInput, secretKey, generateIvFromSessionUser(iv));
+        } catch (NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e) {
+            throw new InvalidIvException(e.getMessage());
+        }
     }
 
     public Map<String, String> decryptWithAesCbc(Map<String, String> cipherInputList, String iv) {
@@ -92,9 +97,6 @@ public class CryptoService {
                                                 : decryptWithAesCbc(v.getValue(), iv);
                                     } catch (NoSuchAlgorithmException
                                              | InvalidAlgorithmParameterException
-                                             | NoSuchPaddingException
-                                             | IllegalBlockSizeException
-                                             | BadPaddingException
                                              | InvalidKeyException e) {
                                         throw new RuntimeException(e);
                                     }
