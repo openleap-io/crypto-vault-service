@@ -1,0 +1,32 @@
+# Test configuration for Crypto Vault Service
+spring:
+  profiles:
+    active: test
+  application:
+    name: crypto-vault-service-test
+
+# Test-specific configuration
+cvs:
+  encryption-key-path: ${java.io.tmpdir}/test-secret.key
+  aes-initialization-vector: "ThisIsATestInitializationVector123456789012345678901234567890"
+
+# Logging configuration for tests
+logging:
+  level:
+    io.openleap.cvs: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Test server configuration
+server:
+  port: 0  # Random port for tests
+
+# Test security configuration
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/auth/realms/test
