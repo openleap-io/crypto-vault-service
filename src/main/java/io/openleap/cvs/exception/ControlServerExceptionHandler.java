@@ -1,5 +1,7 @@
-package io.openleap.cvs.controller.dto.error;
+package io.openleap.cvs.exception;
 
+import io.openleap.cvs.controller.dto.error.ErrorResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+@Hidden
 @RestControllerAdvice
 public class ControlServerExceptionHandler extends ResponseEntityExceptionHandler {
   @ExceptionHandler(NoSuchAlgorithmException.class)
@@ -33,7 +36,7 @@ public class ControlServerExceptionHandler extends ResponseEntityExceptionHandle
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity handleConstraintViolationException(ConstraintViolationException ex) {
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
     Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
     String errorMessage = "";
 
