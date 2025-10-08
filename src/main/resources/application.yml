@@ -28,4 +28,4 @@ eureka:
     enabled: false
 cvs:
   encryption-key-path: src/main/resources/encryption.key
-  aes-initialization-vector: 3a6d40f57eeb6b80
+  aes-initialization-vector: 1abc7869-6c7d-4395-9aa3-b1c7d169aa37e4aa2cf0-efe3-420f-a28a-20f3d409c27b
